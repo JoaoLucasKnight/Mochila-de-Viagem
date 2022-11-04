@@ -15,7 +15,8 @@ form.addEventListener("submit",(evento) => {
     const nome = evento.target.elements['nome']
     const quantidade = evento.target.elements['quantidade']
 
-    const existe = itens.find(elemento => elemento.nome ===nome.value )
+    const existe = itens.find(elemento => elemento.nome === nome.value ) // find enontra o primeiro elemento 
+                                                                        //que satifaz a condição 
 
     // criação  de um objeto 
     const itemAtuais = { 
@@ -31,12 +32,14 @@ form.addEventListener("submit",(evento) => {
         //atualizar no html
         atualizarItem(itemAtuais)
 
-        //atualizar no LocalStorage   //No localStorage nn atualizamos escrevemos por cima 
-        itens[existe.id] = itemAtuais
+        //atualizar no LocalStorage                  //No localStorage nn atualizamos escrevemos por cima 
+        //Refatoração da condicional if else, atualizando um id para cada item
+        itens[itens.findIndex(elemento => elemento.id === existe.id)] = itemAtuais
+                          
     }else {                                              //Não existe 
         
-        //incremento de ID
-        itemAtuais.id = itens.length
+        //incremento de ID verificar se a primeiro item
+        itemAtuais.id = itens[itens.length -1] ? (itens[itens.length-1]).id + 1 : 0;
 
         //enviar para a criação o item escrito agora 
         criaItem (itemAtuais)
@@ -67,7 +70,10 @@ function criaItem (item){
     numeroItem.dataset.id =item.id
 
     novoItem.appendChild(numeroItem) // appendeChild serve para colocar um elemnto dentro do outro 
-    novoItem.innerHTML += item.nome
+    novoItem.innerHTML += item.nome// ??? nn entendi o motivo de usar o '+='
+
+    //Chammando função de criação de botão 
+    novoItem.appendChild(botaDelete(item.id))
 
     lista.appendChild(novoItem)
  
@@ -81,5 +87,31 @@ function atualizarItem (item) {
 
 }
 
+//Função de criação de botaão delete 
+function botaDelete (id) {
+    const elementoBotao = document.createElement("button")
+    elementoBotao.innerHTML = "X"
+
+    elementoBotao.addEventListener("click", function(){
+        deletaElemento(this.parentNode, id)
+    })
+    return elementoBotao
+}
+
+function deletaElemento (tag, id){
+    tag.remove()
+
+    itens.splice(itens.findIndex(elemento => elemento.id === id), 1)
+    //O método splice() altera o conteúdo de uma lista, adicionando novos elementos enquanto remove elementos antigos.
+
+    localStorage.setItem("itens", JSON.stringify(itens))
+}
 
 
+/*splice (onde começa, quantos elemento deve ser removido, que elemento colocar no lugar (separando por
+    virgula ex = 'joao', 'mario'))
+    
+    > Array ["Jan", "Feb", "March", "April", "June"] antes
+    array.splice (0,5, 'joao', 'mario')
+    > Array ["joao", "mario"]depois
+*/
